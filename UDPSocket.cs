@@ -10,6 +10,8 @@ Use under the Apache License 2.0
 Modified by: 
 Youssef Elashry 12/2020 (replaced obsolete functions and improved further - works with Python as well)
 Based on older work by Sandra Fang 2016 - Unity3D to MATLAB UDP communication - [url]http://msdn.microsoft.com/de-de/library/bb979228.aspx#ID0E3BAC[/url]
+
+Modified (3/2025) to work for a multiplayer implementation on Car Mechanic Simulator 2021.
 */
 
 using UnityEngine;
@@ -19,9 +21,12 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using JetBrains.Annotations;
 
-public class UdpSocket : MonoBehaviour
+public class UDPSocket : MonoBehaviour
 {
+    public static UDPSocket Instance { get; private set; } // A signleton in order to get global access to UDPSocket class
+
     [HideInInspector] public bool isTxStarted = false;
 
     [SerializeField] string IP = "127.0.0.1"; // local host
@@ -32,20 +37,6 @@ public class UdpSocket : MonoBehaviour
     UdpClient client;
     IPEndPoint remoteEndPoint;
     Thread receiveThread; // Receiving Thread
-
-    TriviaFetcher pythonTest;
-    TriviaTeams triviaTeams;
-
-
-    //IEnumerator SendDataCoroutine() // DELETE THIS: Added to show sending data from Unity to Python via UDP
-    //{
-    //    while (true)
-    //    {
-    //        SendData("Sent from Unity: " + i.ToString());
-    //        i++;
-    //        yield return new WaitForSeconds(1f);
-    //    }
-    //}
 
     public void SendData(string message) // Use to send data to Python
     {
@@ -76,14 +67,6 @@ public class UdpSocket : MonoBehaviour
 
         // Initialize (seen in comments window)
         print("UDP Comms Initialised");
-
-        //StartCoroutine(SendDataCoroutine()); // DELETE THIS: Added to show sending data from Unity to Python via UDP
-    }
-
-    private void Start() 
-    {
-        pythonTest = FindObjectOfType<TriviaFetcher>(); // Instead of using a public variable
-        triviaTeams = FindAnyObjectByType<TriviaTeams>();
     }
 
     // Receive data, update packets received
@@ -108,14 +91,54 @@ public class UdpSocket : MonoBehaviour
 
     private void ProcessInput(string input)
     {
-        // PROCESS INPUT RECEIVED STRING HERE
-        pythonTest.UpdatePythonRcvdText(input); // Update text by string received from python
-        triviaTeams.UpdatePythonRcvdText(input);
-
         if (!isTxStarted) // First data arrived so tx started
         {
             isTxStarted = true;
         }
+
+        // Input from ReceiveData() is processed here.
+
+        // ==========================================
+
+        // SessionType:
+
+        if (input == "Set session as server.") // Server
+        {
+            if (sessionType != "Not Set")
+            {
+                Debug.Log($"sessionType is already set to {sessionType}. Cannot set Session to {input}.");
+                return;
+            }
+            sessionType = "Server";
+            Debug.Log($"Set sessionType to {sessionType}, session acting as Server");
+            return;
+        }
+
+        if (input == "Set session as client.") // Client
+        {
+            if (sessionType != "Not Set")
+            {
+                Debug.Log($"sessionType is already set to {sessionType}. Cannot set Session to {input}.");
+                return;
+            }
+            sessionType = "Client";
+            Debug.Log($"Set sessionType to {sessionType}, session acting as Client");
+            return;
+        }
+
+        if (input == "Set Player1 GameObject Position to: 100, 100, 100")
+        {
+            int index = input.IndexOf(':');
+            if (index != -1) // Make sure ':' exists.
+            {
+                string result = input.Substring(index + 1).Trim();
+                Debug.Log($"Set Player1 Gameobject position to: {result}");
+            }
+        }
+
+        Debug.Log($"Data: '{input}' could not be processed: Unknown Input.");
+
+        // ==========================================
     }
 
     //Prevent crashes - close clients and threads properly!
@@ -127,4 +150,13 @@ public class UdpSocket : MonoBehaviour
         client.Close();
     }
 
+    // Additional Logic for CMS Online.
+    public string sessionType = "Not Set";
+
+    public void SendTestData()
+    {
+        Debug.Log("Sending Test Data");
+        SendData("Test Data!");
+        Debug.Log("Sent Test Data");
+    }
 }
