@@ -12,10 +12,6 @@ from colorama import Style
 
 colorama_init()
 
-
-# Boolean in order to not repeat winerror 10054
-hasLogged10054 = False
-
 class UDPComms():
     def __init__(self,udpIP,portTX,portRX,enableRX=False,suppressWarnings=True):
         """
@@ -36,6 +32,9 @@ class UDPComms():
         self.suppressWarnings = suppressWarnings # when true warnings are suppressed
         self.isDataReceived = False
         self.dataRX = None
+
+        # Boolean in order to not repeat winerror 10054
+        self.hasLogged10054 = False
 
         # Connect via UDP
         self.udpSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # internet protocol, udp (DGRAM) socket
@@ -78,9 +77,9 @@ class UDPComms():
             data = data.decode('utf-8')
         except WindowsError as e:
             if e.winerror == 10054: # An error occurs if you try to receive before connecting to other application
-                if not self.suppressWarnings:
+                if not self.suppressWarnings and not self.hasLogged10054:
                     print(f"{Fore.LIGHTBLACK_EX}[UDPComms]{Style.RESET_ALL} {Fore.LIGHTYELLOW_EX}Ensure CMS21 is running before starting the server. The server may not work appropriately.{Style.RESET_ALL}")
-                    hasLogged10054 = True
+                    self.hasLogged10054 = True
                 else:
                     pass
             else:

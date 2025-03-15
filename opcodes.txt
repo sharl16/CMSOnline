@@ -1,0 +1,6 @@
+0000: Set session as Server
+0001: Set session as Client
+0002: Host Position Moved
+0003: Client Position Moved
+0004: Set Host Position To
+0005: Set Client Position To

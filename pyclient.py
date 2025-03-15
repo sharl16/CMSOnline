@@ -17,7 +17,7 @@ def ReceiveDataContinuous():
 
 def SignalClient():
     print("Signaling Client session to Unity.")
-    sock.SendData('Set session as client.')
+    sock.SendData('0001')
 
 isRunning = True
 
