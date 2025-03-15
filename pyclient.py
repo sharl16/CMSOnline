@@ -15,11 +15,6 @@ def ReceiveDataContinuous():
             print(f"Received: {received_data}")
         time.sleep(0.01)
 
-def TestSend():
-    testMessage = 'Send test data.'
-    print(f"Sending: {testMessage}")
-    sock.SendData(testMessage)
-
 def SignalClient():
     print("Signaling Client session to Unity.")
     sock.SendData('Set session as client.')
@@ -33,7 +28,7 @@ SignalClient()
 
 # ==========================================================
 
-# P2P:
+# Networking:
 
 import socket
 import threading
@@ -45,7 +40,7 @@ from colorama import Style
 
 colorama_init()
 
-peer_ip = "127.0.0.1"  
+peer_ip = "192.168.1.6"  
 peer_port = 9000 
 
 isConnected = False

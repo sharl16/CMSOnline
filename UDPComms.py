@@ -12,6 +12,10 @@ from colorama import Style
 
 colorama_init()
 
+
+# Boolean in order to not repeat winerror 10054
+hasLogged10054 = False
+
 class UDPComms():
     def __init__(self,udpIP,portTX,portRX,enableRX=False,suppressWarnings=True):
         """
@@ -76,6 +80,7 @@ class UDPComms():
             if e.winerror == 10054: # An error occurs if you try to receive before connecting to other application
                 if not self.suppressWarnings:
                     print(f"{Fore.LIGHTBLACK_EX}[UDPComms]{Style.RESET_ALL} {Fore.LIGHTYELLOW_EX}Ensure CMS21 is running before starting the server. The server may not work appropriately.{Style.RESET_ALL}")
+                    hasLogged10054 = True
                 else:
                     pass
             else:
